@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Jogo 2D - Desvie dos Inimigos</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+    }
+    canvas {
+        display: block;
+        margin: auto;
+        background: #111;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 800;
+canvas.height = 500;
+
+let player = {
+    x: 400,
+    y: 250,
+    size: 30,
+    speed: 5
+};
+
+let enemies = [];
+let score = 0;
+let gameOver = false;
+
+function spawnEnemy() {
+    let size = 30;
+    let x = Math.random() * (canvas.width - size);
+    enemies.push({
+        x: x,
+        y: -size,
+        size: size,
+        speed: 2 + Math.random() * 3
+    });
+}
+
+function update() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Desenhar jogador
+    ctx.fillStyle = "blue";
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+
+    // Atualizar inimigos
+    ctx.fillStyle = "red";
+    enemies.forEach((enemy, index) => {
+        enemy.y += enemy.speed;
+        ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+
+        // Colisão
+        if (
+            player.x < enemy.x + enemy.size &&
+            player.x + player.size > enemy.x &&
+            player.y < enemy.y + enemy.size &&
+            player.y + player.size > enemy.y
+        ) {
+            gameOver = true;
+            alert("Game Over! Pontuação: " + score);
+            document.location.reload();
+        }
+
+        // Remover inimigos fora da tela
+        if (enemy.y > canvas.height) {
+            enemies.splice(index, 1);
+            score++;
+        }
+    });
+
+    // Mostrar pontuação
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Pontuação: " + score, 10, 30);
+
+    requestAnimationFrame(update);
+}
+
+// Controles
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" && player.x > 0)
+        player.x -= player.speed;
+    if (e.key === "ArrowRight" && player.x < canvas.width - player.size)
+        player.x += player.speed;
+    if (e.key === "ArrowUp" && player.y > 0)
+        player.y -= player.speed;
+    if (e.key === "ArrowDown" && player.y < canvas.height - player.size)
+        player.y += player.speed;
+});
+
+// Criar inimigos a cada 1 segundo
+setInterval(spawnEnemy, 1000);
+
+update();
+</script>
+
+</body>
+</html>
